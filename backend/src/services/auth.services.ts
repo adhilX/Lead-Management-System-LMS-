@@ -32,7 +32,7 @@ export class AuthService implements IAuthService {
             password: hashedPassword,
         });
 
-        const token = generateAccessToken((user._id));
+        const token = generateAccessToken({ id: user._id });
 
         return { user, token };
     }
@@ -56,7 +56,7 @@ export class AuthService implements IAuthService {
             throw new ResponseError('Invalid credentials', STATUS_CODES.UNAUTHORIZED);
         }
 
-        const token = generateAccessToken((user._id));
+        const token = generateAccessToken({ id: user._id });
 
         return { user, token };
     }
