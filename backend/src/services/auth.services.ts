@@ -2,7 +2,7 @@ import { IAuthService } from '../interfaces/Iservice/IAuth.service';
 import { IUserRepo } from '../interfaces/Irepo/Iuser.repo';
 import { IUser } from '../entity/user.entity';
 import { hashPassword, comparePassword } from '../utils/passwordHash';
-import { generateToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
 import ResponseError from '../utils/responseError';
 import { STATUS_CODES } from '../constants/statusCodes';
 
@@ -32,7 +32,7 @@ export class AuthService implements IAuthService {
             password: hashedPassword,
         });
 
-        const token = generateToken((user._id as unknown) as string);
+        const token = generateAccessToken((user._id));
 
         return { user, token };
     }
@@ -56,7 +56,7 @@ export class AuthService implements IAuthService {
             throw new ResponseError('Invalid credentials', STATUS_CODES.UNAUTHORIZED);
         }
 
-        const token = generateToken((user._id as unknown) as string);
+        const token = generateAccessToken((user._id));
 
         return { user, token };
     }

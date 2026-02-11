@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/database';
 import authRoutes from './routes/auth.routes';
+import leadRoutes from './routes/lead.routes';
 
 dotenv.config();
 connectDB();
@@ -19,6 +20,7 @@ app.use(cors({
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/leads', leadRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
