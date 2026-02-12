@@ -77,13 +77,13 @@ const Login = () => {
 
       {/* Right Side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-sm space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+        <div className="w-full max-w-md space-y-8 bg-white p-10 rounded-2xl shadow-xl border border-slate-100">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-slate-800">Welcome Back</h2>
             <p className="mt-2 text-slate-500">Sign in to your account to continue</p>
           </div>
 
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-slate-700">Email Address</label>
@@ -93,7 +93,7 @@ const Login = () => {
                     type="email"
                     autoComplete="email"
                     {...register('email')}
-                    className={`appearance-none block w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
+                    className={`appearance-none block w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -110,7 +110,7 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     {...register('password')}
-                    className={`appearance-none block w-full px-4 py-2 border ${errors.password ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
+                    className={`appearance-none block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                     placeholder="••••••••"
                   />
                   <button
@@ -150,7 +150,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? (
                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -161,7 +161,7 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <p className="text-sm text-slate-600">
               Don't have an account?{' '}
               <Link to="/register" className="font-medium text-black hover:text-gray-800 transition-colors">
