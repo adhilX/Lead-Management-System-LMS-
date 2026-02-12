@@ -49,8 +49,8 @@ const Dashboard = () => {
                 leadService.getStats()
             ]);
 
-            setLeads(leadsData.leads);
-            setTotalPages(leadsData.totalPages);
+            setLeads(leadsData.data);
+            setTotalPages(leadsData.pagination.totalPages);
             setStats(statsData);
         } catch (err: any) {
             console.error(err);

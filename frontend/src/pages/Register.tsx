@@ -6,12 +6,19 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerFormSchema, type RegisterFormData } from '../validations/authValidation';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../redux/store';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  let user = useSelector((state: RootState) => state.auth.token);
+
+  if (user) {
+    navigate('/dashboard');
+  }
 
   const {
     register,

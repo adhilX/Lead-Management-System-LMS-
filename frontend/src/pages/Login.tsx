@@ -1,20 +1,25 @@
 import { useState } from 'react';
 import api from '../axios/axiosInstance';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setToken, setUser } from '../redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginFormSchema, type LoginFormData } from '../validations/authValidation';
+import type { RootState } from '../redux/store';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  let user = useSelector((state: RootState) => state.auth.token);
 
+  if (user) {
+    navigate('/dashboard');
+  }
   const {
     register,
     handleSubmit,
@@ -30,7 +35,7 @@ const Login = () => {
       const response = await api.post('/auth/login', data);
       dispatch(setUser(response.data.user));
       dispatch(setToken(response.data.token));
-      toast.success('Welcome back!');
+      toast.success('Welcome back ' + response.data.user.name + '!');
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Login failed:', err);

@@ -1,5 +1,5 @@
 import api from '../axios/axiosInstance';
-import type{ ILead, LeadFilters } from '../types/lead.types';
+import type { ILead, LeadFilters } from '../types/lead.types';
 
 export const leadService = {
     getLeads: async (filters: LeadFilters) => {

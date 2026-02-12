@@ -13,7 +13,16 @@ export class AuthController {
 
             res.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, refreshTokenCookieOptions);
 
-            res.status(STATUS_CODES.CREATED).json({ user: result.user, token: result.accessToken });
+            const userResponse = {
+                id: result.user._id,
+                name: result.user.name,
+                email: result.user.email
+            };
+
+            res.status(STATUS_CODES.CREATED).json({
+                message: 'User registered successfully',
+                user: userResponse
+            });
         } catch (error) {
             handleControllerError(error, res, 'Register');
         }
@@ -25,7 +34,16 @@ export class AuthController {
 
             res.cookie(REFRESH_TOKEN_COOKIE_NAME, result.refreshToken, refreshTokenCookieOptions);
 
-            res.status(STATUS_CODES.OK).json({ user: result.user, token: result.accessToken });
+            const userResponse = {
+                id: result.user._id,
+                name: result.user.name,
+                email: result.user.email
+            };
+
+            res.status(STATUS_CODES.OK).json({
+                token: result.accessToken,
+                user: userResponse
+            });
         } catch (error) {
             handleControllerError(error, res, 'Login');
         }

@@ -12,8 +12,10 @@ export class LeadService implements ILeadService {
         return await this.leadRepo.create({ ...data, createdBy: userId } as any);
     }
 
-    async getLeads(userId: string, query: any): Promise<{ leads: ILead[]; total: number; page: number; totalPages: number }> {
-        const { page = 1, limit = 10, sort, ...filter } = query;
+    async getLeads(userId: string, query: any): Promise<{ data: ILead[]; pagination: { total: number; page: number; totalPages: number } }> {
+        let { page = 1, limit = 10, sort, ...filter } = query;
+
+        limit = Math.min(Number(limit), 100);
 
         let sortObj: any = { createdAt: -1 };
         if (sort) {
@@ -27,10 +29,12 @@ export class LeadService implements ILeadService {
         const { leads, total } = await this.leadRepo.findAllLeads(repoFilter, options);
 
         return {
-            leads,
-            total,
-            page: Number(page),
-            totalPages: Math.ceil(total / Number(limit)),
+            data: leads,
+            pagination: {
+                total,
+                page: Number(page),
+                totalPages: Math.ceil(total / Number(limit)),
+            }
         };
     }
 
@@ -56,7 +60,7 @@ export class LeadService implements ILeadService {
     }
 
     async deleteLead(userId: string, leadId: string): Promise<boolean> {
-            await this.getLead(userId, leadId);
+        await this.getLead(userId, leadId);
         return await this.leadRepo.delete(leadId);
     }
 
