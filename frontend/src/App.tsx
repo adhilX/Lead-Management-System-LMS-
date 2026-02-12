@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Register from './pages/Register';
+import DashboardLayout from './layouts/DashboardLayout';
 import { Toaster } from 'react-hot-toast';
 
 const route = createBrowserRouter([
@@ -15,11 +16,17 @@ const route = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <Dashboard />
-  },
-  {
-    path: '/',
-    element: <Navigate to="/login" replace />
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: '',
+        element: <Dashboard />
+      },
+      {
+        path: '',
+        element: <Navigate to="/login" replace />
+      }
+    ]
   }
 ])
 function App() {
