@@ -1,35 +1,31 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import api from '../axios/axiosInstance';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { registerFormSchema, type RegisterFormData } from '../validations/authValidation';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
-  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerFormSchema),
+    mode: 'onBlur'
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords don't match");
-      return;
-    }
+  const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
     try {
-      const { confirmPassword, ...registerData } = formData;
+      const { confirmPassword, ...registerData } = data;
       await api.post('/auth/register', registerData);
       toast.success('Account created successfully!');
       navigate('/login');
@@ -79,22 +75,22 @@ const Register = () => {
             <p className="mt-2 text-slate-500">Get started with your free account</p>
           </div>
 
-          <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-slate-700">Full Name</label>
               <div className="mt-1">
                 <input
                   id="name"
-                  name="name"
                   type="text"
                   autoComplete="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors"
+                  {...register('name')}
+                  className={`appearance-none block w-full px-4 py-3 border ${errors.name ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                   placeholder="John Doe"
                 />
               </div>
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
@@ -102,16 +98,16 @@ const Register = () => {
               <div className="mt-1">
                 <input
                   id="email"
-                  name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors"
+                  {...register('email')}
+                  className={`appearance-none block w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                   placeholder="you@example.com"
                 />
               </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -119,15 +115,15 @@ const Register = () => {
               <div className="mt-1">
                 <input
                   id="phone"
-                  name="phone"
                   type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors"
+                  {...register('phone')}
+                  className={`appearance-none block w-full px-4 py-3 border ${errors.phone ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                   placeholder="+1 (555) 000-0000"
                 />
               </div>
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+              )}
             </div>
 
             <div>
@@ -135,13 +131,10 @@ const Register = () => {
               <div className="mt-1 relative">
                 <input
                   id="password"
-                  name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors"
+                  {...register('password')}
+                  className={`appearance-none block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                   placeholder="••••••••"
                 />
                 <button
@@ -152,6 +145,9 @@ const Register = () => {
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              )}
             </div>
 
             <div>
@@ -159,13 +155,10 @@ const Register = () => {
               <div className="mt-1 relative">
                 <input
                   id="confirmPassword"
-                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors"
+                  {...register('confirmPassword')}
+                  className={`appearance-none block w-full px-4 py-3 border ${errors.confirmPassword ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                   placeholder="••••••••"
                 />
                 <button
@@ -176,6 +169,9 @@ const Register = () => {
                   {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+              )}
             </div>
 
             <button

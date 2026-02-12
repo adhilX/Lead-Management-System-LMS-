@@ -3,8 +3,6 @@ import { IUserRepo } from '../interfaces/Irepo/Iuser.repo';
 import { IUser } from '../entity/user.entity';
 import { hashPassword, comparePassword } from '../utils/passwordHash';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
-import ResponseError from '../utils/responseError';
-import { STATUS_CODES } from '../constants/statusCodes';
 
 export class AuthService implements IAuthService {
     constructor(private userRepo: IUserRepo) { }
@@ -13,7 +11,7 @@ export class AuthService implements IAuthService {
         const { name, email, password } = data;
 
         if (!name || !email || !password) {
-            throw new ResponseError('Please provide all fields', STATUS_CODES.BAD_REQUEST);
+            throw new Error('Please provide all fields');
         }
 
         const start = Date.now();
@@ -21,7 +19,7 @@ export class AuthService implements IAuthService {
         console.log(`[Query] findByEmail took ${Date.now() - start}ms`);
 
         if (existingUser) {
-            throw new ResponseError('User already exists', STATUS_CODES.BAD_REQUEST);
+            throw new Error('User already exists');
         }
 
         const hashedPassword = await hashPassword(password);
@@ -34,7 +32,7 @@ export class AuthService implements IAuthService {
 
         const accessToken = generateAccessToken({ id: user._id });
         const refreshToken = generateRefreshToken({ id: user._id });
-
+        
         return { user, accessToken, refreshToken };
     }
 
@@ -42,19 +40,19 @@ export class AuthService implements IAuthService {
         const { email, password } = data;
 
         if (!email || !password) {
-            throw new ResponseError('Please provide email and password', STATUS_CODES.BAD_REQUEST);
+            throw new Error('Please provide email and password');
         }
 
         const user = await this.userRepo.findByEmail(email);
 
         if (!user || !user.password) {
-            throw new ResponseError('Invalid credentials', STATUS_CODES.UNAUTHORIZED);
+            throw new Error('email is not registered');
         }
 
         const isMatch = await comparePassword(password, user.password);
 
         if (!isMatch) {
-            throw new ResponseError('Invalid credentials', STATUS_CODES.UNAUTHORIZED);
+            throw new Error('password is incorrect');
         }
 
         const accessToken = generateAccessToken({ id: user._id });
@@ -65,7 +63,7 @@ export class AuthService implements IAuthService {
 
     async refreshToken(token: string): Promise<{ accessToken: string }> {
         if (!token) {
-            throw new ResponseError('Invalid Refresh Token', STATUS_CODES.UNAUTHORIZED);
+            throw new Error('Invalid Refresh Token');
         }
 
         try {
@@ -74,14 +72,14 @@ export class AuthService implements IAuthService {
             const user = await this.userRepo.findById(decoded.id);
 
             if (!user) {
-                throw new ResponseError('User not found', STATUS_CODES.UNAUTHORIZED);
+                throw new Error('User not found');
             }
 
             const accessToken = generateAccessToken({ id: user._id });
 
             return { accessToken };
         } catch (error) {
-            throw new ResponseError('Invalid Refresh Token', STATUS_CODES.UNAUTHORIZED);
+            throw new Error('Invalid Refresh Token');
         }
     }
 }

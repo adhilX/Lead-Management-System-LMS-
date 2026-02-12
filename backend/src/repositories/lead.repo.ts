@@ -33,9 +33,6 @@ export class LeadRepository extends BaseRepository<ILead> implements ILeadRepo {
             if (query.createdTo) mongooseFilter.createdAt.$lte = new Date(query.createdTo);
         }
 
-        // Ensure user can only see their own leads (if userId is passed in filter)
-        // The service layer should enforce this by passing { createdBy: userId } in the filter
-
         const [leads, total] = await Promise.all([
             this._model.find(mongooseFilter).sort(sort).skip(skip).limit(Number(limit)).exec(),
             this._model.countDocuments(mongooseFilter),
@@ -46,6 +43,11 @@ export class LeadRepository extends BaseRepository<ILead> implements ILeadRepo {
 
     async getStats(filter: any): Promise<any> {
         const mongooseFilter: any = { ...filter };
+
+        // Ensure createdBy is an ObjectId for aggregation
+        if (mongooseFilter.createdBy && typeof mongooseFilter.createdBy === 'string') {
+            mongooseFilter.createdBy = new mongo.ObjectId(mongooseFilter.createdBy);
+        }
 
         // Apply date filters if present (reusing logic or passing pre-built filter)
         if (filter.createdFrom || filter.createdTo) {

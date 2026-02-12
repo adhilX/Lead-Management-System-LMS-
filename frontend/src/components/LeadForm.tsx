@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { leadService } from '../services/leadService';
 import { type ILead, LeadStatus, LeadSource } from '../types/lead.types';
+import { leadFormSchema, type LeadFormData } from '../validations/leadValidation';
 import { X, Save, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -11,35 +14,50 @@ interface LeadFormProps {
 }
 
 const LeadForm: React.FC<LeadFormProps> = ({ existingLead, onClose, onSuccess }) => {
-    const [formData, setFormData] = useState<Partial<ILead>>({
-        name: '',
-        email: '',
-        phone: '',
-        source: LeadSource.WEBSITE,
-        status: LeadStatus.NEW,
-        notes: '',
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        reset
+    } = useForm<LeadFormData>({
+        resolver: zodResolver(leadFormSchema),
+        mode: 'onChange', // Validate on change for better UX
+        reValidateMode: 'onChange', // Re-validate on change after first submit
+        defaultValues: {
+            name: '',
+            email: '',
+            phone: '',
+            source: LeadSource.WEBSITE,
+            status: LeadStatus.NEW,
+            notes: '',
+        }
     });
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (existingLead) {
-            setFormData(existingLead);
+            reset({
+                name: existingLead.name,
+                email: existingLead.email || '',
+                phone: existingLead.phone,
+                source: existingLead.source,
+                status: existingLead.status,
+                notes: existingLead.notes || '',
+            }, {
+                keepDefaultValues: false,
+            });
         }
-    }, [existingLead]);
+    }, [existingLead, reset]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+    const onSubmit = async (data: LeadFormData) => {
         try {
+            // Validation ensures source/status are valid enum values, so safe to cast
+            const leadData = data as Partial<ILead>;
+
             if (existingLead && existingLead._id) {
-                await leadService.updateLead(existingLead._id, formData);
+                await leadService.updateLead(existingLead._id, leadData);
                 toast.success('Lead updated successfully');
             } else {
-                await leadService.createLead(formData);
+                await leadService.createLead(leadData);
                 toast.success('Lead created successfully');
             }
             onSuccess();
@@ -47,8 +65,6 @@ const LeadForm: React.FC<LeadFormProps> = ({ existingLead, onClose, onSuccess })
         } catch (err: any) {
             console.error(err);
             toast.error(err.response?.data?.message || 'Failed to save lead');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -80,18 +96,17 @@ const LeadForm: React.FC<LeadFormProps> = ({ existingLead, onClose, onSuccess })
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
                                 <input
                                     type="text"
-                                    name="name"
-                                    value={formData.name || ''}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm"
-                                    required
+                                    {...register('name')}
+                                    className={`appearance-none block w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm ${errors.name ? 'border-red-500' : 'border-slate-300'
+                                        }`}
                                     placeholder="Jane Doe"
                                 />
+                                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -99,24 +114,23 @@ const LeadForm: React.FC<LeadFormProps> = ({ existingLead, onClose, onSuccess })
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
                                     <input
                                         type="email"
-                                        name="email"
-                                        value={formData.email || ''}
-                                        onChange={handleChange}
-                                        className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm"
+                                        {...register('email')}
+                                        className={`appearance-none block w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm ${errors.email ? 'border-red-500' : 'border-slate-300'
+                                            }`}
                                         placeholder="jane@example.com"
                                     />
+                                    {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
                                     <input
                                         type="text"
-                                        name="phone"
-                                        value={formData.phone || ''}
-                                        onChange={handleChange}
-                                        className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm"
-                                        required
+                                        {...register('phone')}
+                                        className={`appearance-none block w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm ${errors.phone ? 'border-red-500' : 'border-slate-300'
+                                            }`}
                                         placeholder="+1 (555) 000-0000"
                                     />
+                                    {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
                                 </div>
                             </div>
 
@@ -124,41 +138,41 @@ const LeadForm: React.FC<LeadFormProps> = ({ existingLead, onClose, onSuccess })
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Source</label>
                                     <select
-                                        name="source"
-                                        value={formData.source}
-                                        onChange={handleChange}
-                                        className="block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm bg-white"
+                                        {...register('source')}
+                                        className={`block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm bg-white ${errors.source ? 'border-red-500' : 'border-slate-300'
+                                            }`}
                                     >
                                         {Object.values(LeadSource).map((src) => (
                                             <option key={src} value={src}>{src}</option>
                                         ))}
                                     </select>
+                                    {errors.source && <p className="mt-1 text-sm text-red-600">{errors.source.message}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
                                     <select
-                                        name="status"
-                                        value={formData.status}
-                                        onChange={handleChange}
-                                        className="block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm bg-white"
+                                        {...register('status')}
+                                        className={`block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm bg-white ${errors.status ? 'border-red-500' : 'border-slate-300'
+                                            }`}
                                     >
                                         {Object.values(LeadStatus).map((status) => (
                                             <option key={status} value={status}>{status}</option>
                                         ))}
                                     </select>
+                                    {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>}
                                 </div>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
                                 <textarea
-                                    name="notes"
+                                    {...register('notes')}
                                     rows={3}
-                                    value={formData.notes || ''}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm"
+                                    className={`appearance-none block w-full px-3 py-2 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black sm:text-sm ${errors.notes ? 'border-red-500' : 'border-slate-300'
+                                        }`}
                                     placeholder="Add any additional notes about this lead..."
                                 />
+                                {errors.notes && <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>}
                             </div>
 
                             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
@@ -171,10 +185,10 @@ const LeadForm: React.FC<LeadFormProps> = ({ existingLead, onClose, onSuccess })
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={loading}
-                                    className={`inline-flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    disabled={isSubmitting}
+                                    className={`inline-flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 >
-                                    {loading ? (
+                                    {isSubmitting ? (
                                         <>
                                             <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
                                             Saving...

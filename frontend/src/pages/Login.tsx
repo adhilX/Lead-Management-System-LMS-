@@ -1,24 +1,33 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import api from '../axios/axiosInstance';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken, setUser } from '../redux/slices/authSlice';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginFormSchema, type LoginFormData } from '../validations/authValidation';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginFormSchema),
+    mode: 'onBlur'
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', data);
       dispatch(setUser(response.data.user));
       dispatch(setToken(response.data.token));
       toast.success('Welcome back!');
@@ -69,23 +78,23 @@ const Login = () => {
             <p className="mt-2 text-slate-500">Sign in to your account to continue</p>
           </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-slate-700">Email Address</label>
                 <div className="mt-1 relative">
                   <input
                     id="email"
-                    name="email"
                     type="email"
                     autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors"
+                    {...register('email')}
+                    className={`appearance-none block w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                     placeholder="you@example.com"
                   />
                 </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                )}
               </div>
 
               <div>
@@ -93,13 +102,10 @@ const Login = () => {
                 <div className="mt-1 relative">
                   <input
                     id="password"
-                    name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors"
+                    {...register('password')}
+                    className={`appearance-none block w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-slate-300'} rounded-lg focus:ring-2 focus:ring-black focus:border-black placeholder-slate-400 transition-colors`}
                     placeholder="••••••••"
                   />
                   <button
@@ -110,6 +116,9 @@ const Login = () => {
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                )}
               </div>
             </div>
 

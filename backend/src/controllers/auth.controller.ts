@@ -2,11 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import { IAuthService } from '../interfaces/Iservice/IAuth.service';
 import { STATUS_CODES } from '../constants/statusCodes';
 import { REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieOptions } from '../utils/cookie';
+import { handleControllerError } from '../utils/responseError';
 
 export class AuthController {
     constructor(private authService: IAuthService) { }
 
-    register = async (req: Request, res: Response, next: NextFunction) => {
+    register = async (req: Request, res: Response) => {
         try {
             const result = await this.authService.register(req.body);
 
@@ -14,11 +15,11 @@ export class AuthController {
 
             res.status(STATUS_CODES.CREATED).json({ user: result.user, token: result.accessToken });
         } catch (error) {
-            next(error);
+            handleControllerError(error, res, 'Register');
         }
     };
 
-    login = async (req: Request, res: Response, next: NextFunction) => {
+    login = async (req: Request, res: Response) => {
         try {
             const result = await this.authService.login(req.body);
 
@@ -26,17 +27,17 @@ export class AuthController {
 
             res.status(STATUS_CODES.OK).json({ user: result.user, token: result.accessToken });
         } catch (error) {
-            next(error);
+            handleControllerError(error, res, 'Login');
         }
     };
 
-    refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+    refreshToken = async (req: Request, res: Response) => {
         try {
             const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
             const result = await this.authService.refreshToken(refreshToken);
             res.status(STATUS_CODES.OK).json(result);
         } catch (error) {
-            next(error);
+            handleControllerError(error, res, 'Refresh Token');
         }
     };
 }
