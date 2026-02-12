@@ -14,12 +14,14 @@
     "@tailwindcss/vite": "^4.1.18",
     "autoprefixer": "^10.4.24",
     "axios": "^1.13.5",
+    "lucide-react": "^0.563.0",
     "postcss": "^8.5.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.13.0",
+    "redux-persist": "^6.0.0",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
@@ -27,6 +29,7 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/redux-persist": "^4.0.0",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
