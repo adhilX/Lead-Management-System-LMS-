@@ -7,6 +7,10 @@ import { Toaster } from 'react-hot-toast';
 
 const route = createBrowserRouter([
   {
+    path: '/',
+    element: <Navigate to="/login" replace />
+  },
+  {
     path: '/login',
     element: <Login />
   },
@@ -21,10 +25,6 @@ const route = createBrowserRouter([
       {
         path: '',
         element: <Dashboard />
-      },
-      {
-        path: '',
-        element: <Navigate to="/login" replace />
       }
     ]
   }
